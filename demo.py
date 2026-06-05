@@ -37,8 +37,8 @@ def convert_yolo_to_widerface(data_dir, output_file):
                 
             h_img, w_img, _ = img.shape
             
-            # Write image header (SCRFD dataloader will join this with your image prefix path)
-            out_f.write(f"# {filename}\n")
+            # Write image header (SCRFD dataloader expects filename width height)
+            out_f.write(f"# {filename} {w_img} {h_img}\n")
             
             with open(label_path, 'r') as in_f:
                 for line in in_f:
@@ -67,11 +67,12 @@ def convert_yolo_to_widerface(data_dir, output_file):
                     for i in range(5):
                         lx = float(parts[5 + i*2]) * w_img
                         ly = float(parts[5 + i*2 + 1]) * h_img
-                        # SCRFD expects EXACTLY 10 landmark values (x y only, NO visibility flags!)
-                        line_out += f" {lx:.2f} {ly:.2f}"
-                        
+                        # Widerface SCRFD expects: x y visibility (0.0 usually means visible)
+                        line_out += f" {lx:.2f} {ly:.2f} 0.0"
+                    
+                    line_out += " 1.0\n"
                     # Write the converted annotation line
-                    out_f.write(line_out + "\n")
+                    out_f.write(line_out)
             
             converted_count += 1
 
