@@ -56,6 +56,12 @@ def convert_yolo_to_widerface(data_dir, output_file):
                     abs_cx = cx * w_img
                     abs_cy = cy * h_img
                     
+                    # SAFETY CHECK: Filter out 'landmine' bounding boxes
+                    # If width or height is <= 1 pixel, it causes a Division by Zero in IoU Loss!
+                    if abs_w <= 1.0 or abs_h <= 1.0:
+                        print(f"Skipping corrupted 0-area box in {filename}")
+                        continue
+                    
                     # Convert center coordinates to top-left (xmin, ymin)
                     xmin = abs_cx - (abs_w / 2)
                     ymin = abs_cy - (abs_h / 2)
